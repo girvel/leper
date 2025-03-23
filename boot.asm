@@ -3,6 +3,18 @@
 
 mov ah, 0x0e        ; BIOS teletype function
 
+mov al, 'L'
+int 0x10
+mov al, 'e'
+int 0x10
+mov al, 'p'
+int 0x10
+mov al, 'e'
+int 0x10
+mov al, 'r'
+int 0x10
+mov al, ' '
+int 0x10
 mov al, 'O'
 int 0x10
 mov al, 'S'
@@ -21,12 +33,6 @@ mov al, '.'
 int 0x10
 mov al, '1'
 int 0x10
-mov al, '1'
-mov al, '1'
-mov al, '1'
-mov al, '1'
-mov al, '1'
-mov al, '1'
 
 hlt                 ; Halt the CPU
 
