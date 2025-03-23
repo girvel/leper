@@ -1,7 +1,10 @@
 run: build
-	qemu-system-x86_64 -fda .build/disk.img
+	qemu-system-x86_64 -drive file=.build/disk.img,format=raw,if=floppy
 
-build: .build/disk.img
+build: .build .build/disk.img
+
+.build:
+	@mkdir -p .build
 
 .build/boot.bin: boot.asm
 	nasm -f bin -o $@ $<
