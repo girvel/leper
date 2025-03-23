@@ -1,12 +1,11 @@
-; boot.asm
-[org 0x7c00]        ; Tell the assembler where this code will be loaded
+[org 0x7c00]  ; Tell the assembler where this code will be loaded
 
 ; Clean the screen
 mov ah, 0x00  ; Set video mode
 mov al, 0x03  ; 80x25 text mode
 int 0x10
 
-mov ah, 0x0E        ; BIOS teletype function
+mov ah, 0x0E  ; BIOS teletype function
 
 mov al, 'L'
 int 0x10
@@ -57,9 +56,4 @@ disk_error:
     hlt
 
 times 510-($-$$) db 0  ; Fill the rest of the boot sector with zeros
-dw 0xaa55              ; Boot signature
-
-; kernel
-mov ah, 0x0E
-mov al, '!'
-int 0x10
+dw 0xaa55  ; Boot signature
