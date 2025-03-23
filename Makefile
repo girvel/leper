@@ -7,7 +7,7 @@ build: .build .build/disk.img
 	@mkdir -p .build
 
 .build/boot.bin: boot.asm
-	nasm -f bin -o $@ $<
+	nasm -f bin -l .build/boot.lst -o $@ $<
 
 .build/disk.img: .build/boot.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
