@@ -2,31 +2,31 @@
 [org 0x7c00]        ; Tell the assembler where this code will be loaded
 
 mov ah, 0x0e        ; BIOS teletype function
-mov al, 'H'         ; Character to print
-int 0x10            ; BIOS interrupt
-mov al, 'e'
+
+mov al, 'O'
 int 0x10
-mov al, 'l'
-int 0x10
-int 0x10            ; Print 'l' again
-mov al, 'o'
-int 0x10
-mov al, ','
+mov al, 'S'
 int 0x10
 mov al, ' '
 int 0x10
-mov al, 'W'
+mov al, 'v'
 int 0x10
-mov al, 'o'
+mov al, '0'
 int 0x10
-mov al, 'r'
+mov al, '.'
 int 0x10
-mov al, 'l'
+mov al, '0'
 int 0x10
-mov al, 'd'
+mov al, '.'
 int 0x10
-mov al, '!'
+mov al, '1'
 int 0x10
+mov al, '1'
+mov al, '1'
+mov al, '1'
+mov al, '1'
+mov al, '1'
+mov al, '1'
 
 hlt                 ; Halt the CPU
 
