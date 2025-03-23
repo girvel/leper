@@ -39,28 +39,27 @@ int 0x10
 mov al, '1'
 int 0x10
 
-mov al, 0x0D
-int 0x10
-mov al, 0x0A
-int 0x10
-mov al, 0x0D
-int 0x10
-mov al, 0x0A
-int 0x10
+mov ah, 0x02
+mov al, 5
+mov ch, 0
+mov cl, 2
+mov dh, 0
+mov dl, 0
+mov bx, 0x1000
+int 0x13
+jc disk_error
+jmp 0x1000
 
+disk_error:
+    mov ah, 0x0E
+    mov al, '?'
+    int 0x10
+    hlt
+
+times 510-($-$$) db 0  ; Fill the rest of the boot sector with zeros
+dw 0xaa55              ; Boot signature
+
+; kernel
+mov ah, 0x0E
 mov al, '!'
 int 0x10
-
-mov cx, 10
-
-rw_loop:
-    mov ah, 0x00  ; Read keypress
-    int 0x16
-    mov ah, 0x0E
-    int 0x10
-    loop rw_loop
-
-hlt                 ; Halt the CPU
-
-times 510-($-$$) db 0 ; Fill the rest of the boot sector with zeros
-dw 0xaa55           ; Boot signature
