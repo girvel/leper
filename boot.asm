@@ -56,6 +56,31 @@ protected_mode:
 
     jmp 0x08:long_mode
 
+setup_paging:
+    ; Set up PML4, PDPT, PD tables
+    mov edi, 0x70000     ; Physical address for PML4
+    mov cr3, edi         ; Set CR3 while still in 32-bit mode
+
+    ; Clear memory for page tables
+    xor eax, eax
+    mov ecx, 0x4000      ; 16KB (4 tables)
+    rep stosd
+
+    ; Set up PML4
+    mov edi, 0x70000
+    mov dword [edi], 0x71003  ; Point to PDPT (present + writable)
+
+    ; Set up PDPT
+    mov edi, 0x71000
+    mov dword [edi], 0x72003  ; Point to PD (present + writable)
+
+    ; Set up PD (identity map first 2MB using 2MB pages)
+    mov edi, 0x72000
+    mov dword [edi], 0x00000083  ; First 2MB (present + writable + huge page)
+    mov dword [edi+8], 0x200083  ; Next 2MB (present + writable + huge page)
+
+    ret
+
 [bits 64]
 long_mode:
     ; Clear segment registers
@@ -82,30 +107,6 @@ print_string:
     int 0x10
     jmp print_string
 .done:
-    ret
-
-setup_paging:
-    ; Set up PML4, PDPT, PD tables
-    mov edi, 0x70000
-    mov cr3, edi
-
-    ; PML4
-    mov dword [edi], 0x71003  ; Point to PDPT (present + writable)
-    add edi, 0x1000
-
-    ; PDPT
-    mov dword [edi], 0x72003  ; Point to PD (present + writable)
-    add edi, 0x1000
-
-    ; PD (identity map first 2MB)
-    mov ebx, 0x83  ; Present + writable + huge page
-    mov ecx, 2     ; Map 2 entries (2MB each = 4MB total)
-.setup_pd:
-    mov dword [edi], ebx
-    add ebx, 0x200000
-    add edi, 8
-    loop .setup_pd
-
     ret
 
 ; 32-bit GDT
