@@ -6,7 +6,7 @@ mov ch, 0
 mov cl, 2
 mov dh, 0
 mov dl, 0
-mov bx, 0x1000
+mov bx, 0x1000  ; address to put kernel at
 int 0x13
 jc disk_error
 jmp 0x1000

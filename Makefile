@@ -10,7 +10,7 @@ build: .build .build/disk.img
 	nasm -f bin -l .build/boot.lst -o $@ $<
 
 .build/kernel.bin: kernel.asm
-	nasm -f bin -o $@ $<
+	nasm -f bin -l .build/kernel.lst -o $@ $<
 
 .build/disk.img: .build/boot.bin .build/kernel.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
