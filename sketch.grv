@@ -1,0 +1,13 @@
+writeln("Leper OS v0.0.1")
+
+loop {
+  write("> ")
+  in_buffer: char[256]
+  readln(in_buffer)
+
+  if starts_with(in_buffer, "echo") {
+    writeln(in_buffer + 5);
+  } else if in_buffer == "exit" {
+    break
+  }
+}

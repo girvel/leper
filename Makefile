@@ -9,7 +9,7 @@ build: .build .build/disk.img
 .build/boot.bin: boot.asm
 	nasm -f bin -l .build/boot.lst -o $@ $<
 
-.build/kernel.bin: kernel.asm
+.build/kernel.bin: kernel.asm stdlib.asm
 	nasm -f bin -l .build/kernel.lst -o $@ $<
 
 .build/disk.img: .build/boot.bin .build/kernel.bin
