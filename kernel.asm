@@ -33,6 +33,12 @@ section .text
     call string_cmp
     je .shell_end
 
+    mov di, in_buffer
+    mov si, time_literal
+    mov cx, 256
+    call string_cmp
+    je .time
+
     mov si, unkown_command_error
     call writeln
 
@@ -41,6 +47,32 @@ section .text
 .echo:
     mov si, in_buffer + 5
     call writeln
+    jmp .shell_loop
+
+.time:
+    mov ah, 0x02
+    int 0x1A  ; get time
+
+    mov bl, cl
+
+    mov cl, ch
+    call write_hex
+
+    mov si, colon
+    call write
+
+    mov cl, bl
+    call write_hex
+
+    mov si, colon
+    call write
+
+    mov cl, dh
+    call write_hex
+
+    mov si, empty_line
+    call writeln
+
     jmp .shell_loop
 
 .shell_end:
@@ -58,7 +90,10 @@ section .data
     unkown_command_error db "Error: unknown command", 0
     echo_literal db "echo", 0
     exit_literal db "exit", 0
+    time_literal db "time", 0
     exit_message db "Exited.", 0
+    empty_line db "", 0
+    colon db ":", 0
     
     in_buffer times 256 db 0
 

@@ -18,6 +18,29 @@ write:  ; si: string pointer
 .done:
     ret
 
+write_hex:  ; cl: number
+    mov ah, 0x0E
+
+    mov al, cl
+    shr al, 4
+    add al, '0'
+    cmp al, '9'
+    jbe .print_high
+    add al, 7
+.print_high:
+    int 0x10
+
+    mov al, cl
+    and al, 0x0F
+    add al, '0'
+    cmp al, '9'
+    jbe .print_low
+    add al, 7
+.print_low:
+    int 0x10
+
+    ret
+
 
 readln:  ; di: string pointer, cx: length limit
 .loop:
