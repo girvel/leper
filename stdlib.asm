@@ -33,9 +33,27 @@ readln:  ; di: string pointer, cx: length limit
     cmp al, 13
     je .newline
 
+    cmp al, 8
+    je .backspace
+
     mov [di], al
     inc di
     dec cx
+
+    jmp .loop
+
+.backspace:
+    test cx, cx
+    jz .loop
+
+    inc cx
+    dec di
+
+    mov al, ' '
+    int 0x10
+
+    mov al, 8
+    int 0x10
 
     jmp .loop
 
