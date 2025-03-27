@@ -27,6 +27,12 @@ section .text
     call string_cmp
     je .echo
 
+    mov di, in_buffer
+    mov si, exit_literal
+    mov cx, 256
+    call string_cmp
+    je .shell_end
+
     mov si, unkown_command_error
     call writeln
 
@@ -37,7 +43,9 @@ section .text
     call writeln
     jmp .shell_loop
 
-
+.shell_end:
+    mov si, exit_message
+    call writeln
 end:
     hlt
     jmp end
@@ -49,5 +57,8 @@ section .data
     shell_prompt db "> ", 0
     unkown_command_error db "Error: unknown command", 0
     echo_literal db "echo", 0
+    exit_literal db "exit", 0
+    exit_message db "Exited.", 0
+    
     in_buffer times 256 db 0
 
