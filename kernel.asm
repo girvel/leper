@@ -11,7 +11,7 @@ int 0x10
 
 mov ah, 0x0E  ; BIOS teletype function
 
-push version_string
+mov si, version_string
 call print
 
 end:
@@ -19,10 +19,6 @@ end:
     jmp end
 
 print:
-    pop si
-    mov di, si
-    pop si
-    push di
 .loop:
     lodsb
     test al, al
