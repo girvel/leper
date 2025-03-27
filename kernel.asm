@@ -13,19 +13,36 @@ section .text
     mov si, version_string
     call writeln
 
+.shell_loop:
+    mov si, shell_prompt
+    call write
+
     mov di, in_buffer
-    mov cx, 16
+    mov cx, 256
     call readln
 
-    mov si, in_buffer
+    mov di, in_buffer
+    mov si, echo_literal
+    mov cx, 4
+    call string_cmp
+    je .echo
+
+    mov si, unkown_command_error
     call writeln
+
+    jmp .shell_loop
+
+.echo:
+    mov si, in_buffer + 5
+    call writeln
+    jmp .shell_loop
 
 end:
     hlt
     jmp end
 
 
-writeln:
+writeln:  ; si: string pointer
     call write
     mov al, 13
     int 0x10
@@ -73,8 +90,26 @@ readln:  ; di: string pointer, cx: length limit
     mov byte [di], 0x00
     ret
 
+string_cmp:  ; di: first string, si: second string, cx: length
+    .loop:
+        mov al, [si]
+        cmp [di], al
+        jne .done
+
+        cmp byte [di], 0
+        je .done
+
+        loop .loop
+
+        cmp al, al
+    .done:
+        ret
+    
+
 section .data
     version_string db "Leper OS v0.0.1", 0
-    in_buffer times 64 db 0
-    in_length db 0
+    shell_prompt db "> ", 0
+    unkown_command_error db "Error: unknown command", 0
+    echo_literal db "echo", 0
+    in_buffer times 256 db 0
 
