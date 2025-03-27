@@ -39,6 +39,12 @@ section .text
     call string_cmp
     je .time
 
+    mov di, in_buffer
+    mov si, ls_literal
+    mov cx, 256
+    call string_cmp
+    je .ls
+
     mov si, unkown_command_error
     call writeln
 
@@ -49,7 +55,7 @@ section .text
     call writeln
     jmp .shell_loop
 
-.time:
+.time:  ; TODO maybe into separate files?
     mov ah, 0x02
     int 0x1A  ; get time
 
@@ -75,6 +81,39 @@ section .text
 
     jmp .shell_loop
 
+.ls:
+    mov cx, 2
+    mov ah, 0x02
+    mov al, 1
+    mov ch, 0
+    mov dh, 0
+    mov dl, 0x00
+    mov bx, ls_buffer
+    int 0x13
+
+    mov cl, [ls_buffer + 1]
+    call write_hex
+
+    mov cl, [ls_buffer]
+    call write_hex
+
+    mov si, space_literal
+    call write
+
+    mov cl, [ls_buffer + 3]
+    call write_hex
+
+    mov cl, [ls_buffer + 2]
+    call write_hex
+
+    mov si, space_literal
+    call write
+
+    mov si, ls_buffer + 4
+    call writeln
+
+    jmp .shell_loop
+
 .shell_end:
     mov si, exit_message
     call writeln
@@ -91,9 +130,12 @@ section .data
     echo_literal db "echo", 0
     exit_literal db "exit", 0
     time_literal db "time", 0
+    ls_literal db "ls", 0
     exit_message db "Exited.", 0
     empty_line db "", 0
     colon db ":", 0
+    space_literal db " ", 0
     
     in_buffer times 256 db 0
+    ls_buffer times 512 db 0
 

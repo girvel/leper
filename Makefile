@@ -12,9 +12,13 @@ build: .build .build/disk.img
 .build/kernel.bin: kernel.asm stdlib.asm
 	nasm -f bin -l .build/kernel.lst -o $@ $<
 
-.build/disk.img: .build/boot.bin .build/kernel.bin
+.build/file_table.bin: file_table.asm
+	nasm -f bin -l .build/file_table.lst -o $@ $<
+
+.build/disk.img: .build/boot.bin .build/kernel.bin .build/file_table.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
 	dd if=.build/boot.bin of=$@ conv=notrunc
-	dd if=.build/kernel.bin of=$@ bs=512 seek=1 conv=notrunc
+	dd if=.build/file_table.bin of=$@ bs=512 seek=1 conv=notrunc
+	dd if=.build/kernel.bin of=$@ bs=512 seek=2 conv=notrunc
 
 .PHONY: build run
