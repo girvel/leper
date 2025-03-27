@@ -1,7 +1,7 @@
 [org 0x7c00]  ; As I understand, a normal location for a bootloader
 
 mov ah, 0x02
-mov al, 1  ; N of sectors to load
+mov al, 4  ; N of sectors to load
 mov ch, 0
 mov cl, 3
 mov dh, 0

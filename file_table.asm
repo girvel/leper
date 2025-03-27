@@ -9,7 +9,7 @@ db "kernel.bin"
 times 32 - ($-$$) db 0
 
 ; some demo file
-dw 4
+dw 8
 dw 1
-db "demo.txt"
+db "demo"
 times 2 * 32 - ($-$$) db 0

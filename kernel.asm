@@ -45,6 +45,12 @@ section .text
     call string_cmp
     je .ls
 
+    mov di, in_buffer
+    mov si, demo_literal
+    mov cx, 256
+    call string_cmp
+    je .demo
+
     mov si, unkown_command_error
     call writeln
 
@@ -125,6 +131,20 @@ section .text
 .ls_done:
     jmp .shell_loop
 
+.demo:
+    mov cx, 8
+    mov ah, 0x02
+    mov al, 1
+    mov ch, 0
+    mov dh, 0
+    mov dl, 0x00
+    mov bx, ls_buffer
+    int 0x13
+
+    call ls_buffer
+
+    jmp .shell_loop
+
 .shell_end:
     mov si, exit_message
     call writeln
@@ -142,6 +162,7 @@ section .data
     exit_literal db "exit", 0
     time_literal db "time", 0
     ls_literal db "ls", 0
+    demo_literal db "demo", 0
     exit_message db "Exited.", 0
     empty_line db "", 0
     colon db ":", 0
