@@ -74,6 +74,9 @@ string_cmp:  ; di: first string, si: second string, cx: length
         cmp byte [di], 0
         je .done
 
+        inc di
+        inc si
+
         loop .loop
 
         cmp al, al
