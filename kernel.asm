@@ -91,27 +91,38 @@ section .text
     mov bx, ls_buffer
     int 0x13
 
-    mov cl, [ls_buffer + 1]
+    mov di, ls_buffer
+
+.ls_loop:
+    cmp word [di], 0
+    je .ls_done
+
+    mov cl, [di + 1]
     call write_hex
 
-    mov cl, [ls_buffer]
-    call write_hex
-
-    mov si, space_literal
-    call write
-
-    mov cl, [ls_buffer + 3]
-    call write_hex
-
-    mov cl, [ls_buffer + 2]
+    mov cl, [di]
     call write_hex
 
     mov si, space_literal
     call write
 
-    mov si, ls_buffer + 4
+    mov cl, [di + 3]
+    call write_hex
+
+    mov cl, [di + 2]
+    call write_hex
+
+    mov si, space_literal
+    call write
+
+    add di, 4
+    mov si, di
     call writeln
 
+    add di, 28
+
+    jmp .ls_loop
+.ls_done:
     jmp .shell_loop
 
 .shell_end:
