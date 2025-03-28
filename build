@@ -1,0 +1,130 @@
+#!/usr/bin/env lua
+
+-- TODO track update time
+-- TODO! dynamic size for file table
+
+local SECTOR_SIZE = 512
+local SECTORS_N = 2880
+
+local word = function(n)
+  assert(n < 2 ^ 16)
+  return string.char(n % 256, math.floor(n / 256))
+end
+
+local read_file = function(filename)
+  local f = assert(io.open(filename, "rb"))
+  local result = f:read("*a")
+  f:close()
+  return result
+end
+
+local fatal = function(msg, ...)
+  msg = msg:format(...)
+  print("ERROR:", msg)
+  os.exit(1)
+end
+
+--- @param cmd string
+--- @param ... any
+local run = function(cmd, ...)
+  cmd = cmd:format(...)
+  local ok, _, exit_code = os.execute(cmd)
+  if exit_code ~= 0 then
+    fatal("exited with code %s", exit_code)
+  end
+  if not ok then
+    fatal("malformed command")
+  end
+  print(cmd)
+end
+
+--- @param filename string
+--- @return string, integer
+local nasm = function(filename)
+  local i = filename:find([[%.[^%.]+$]])
+  local base_name = i and filename:sub(1, i - 1) or filename
+  local bin_name = (".build/bin/%s.bin"):format(base_name)
+  run("nasm -f bin -l .build/lst/%s.lst -o %s %s", base_name, bin_name, filename)
+
+  local f = assert(io.open(bin_name, "rb"))
+  local size = f:seek("end")
+  f:close()
+
+  return bin_name, size
+end
+
+--- @class params
+--- @field bootloader string
+--- @field files string[]
+
+--- @param params params
+local build = function(params)
+  if #params.files > 16 then
+    fatal("leperfs supports 16 files max, %s found", #params.files)
+  end
+
+  run("rm -rf .build && mkdir -p .build/lst .build/bin")
+
+  local boot_file, boot_size = nasm(params.bootloader)
+
+  if boot_size ~= SECTOR_SIZE then
+    fatal("bootloader of size %s, should be 512", SECTOR_SIZE)
+  end
+
+  local files_info = {}
+
+  local sector = 3
+  for i, file in ipairs(params.files) do
+    local bin_file, size = nasm(file)
+    size = math.ceil(size / SECTOR_SIZE)
+    files_info[i] = {file = bin_file, position = sector, size = size}
+    sector = sector + size
+
+    if sector > SECTORS_N then
+      fatal("file %s exceeds the limit of %s sectors: %s", file, SECTORS_N, sector)
+    end
+  end
+
+  local result = assert(io.open(".build/disk.img", "wb"))
+
+  result:write(read_file(boot_file))
+
+  for _, info in ipairs(files_info) do
+    if #info.file >= 28 then
+      fatal("file `%s` exceeds max name length of 27", info.file)
+    end
+
+    result:write(word(info.position))
+    result:write(word(info.size))
+    result:write(info.file)
+    result:write(("\0"):rep(28 - #info.file))
+  end
+
+  result:write(("\0"):rep(SECTOR_SIZE - #files_info * 32))
+
+  for _, info in ipairs(files_info) do
+    local content = read_file(info.file)
+    result:write(content)
+    result:write(("\0"):rep(SECTOR_SIZE * info.size - #content))
+  end
+
+  local last = files_info[#files_info]
+  local os_size = last.position + last.size
+
+  print(("OS size is %s KB"):format(os_size / 2))
+
+  result:write(("\0"):rep((SECTORS_N - os_size) * SECTOR_SIZE))
+  result:close()
+
+  run("qemu-system-x86_64 -drive file=.build/disk.img,format=raw,if=floppy")
+end
+
+------------------------------------------------>8-------------------------------------------------
+
+build {
+  bootloader = "boot.asm",
+  files = {
+    "kernel.asm",
+    "demo.asm",
+  },
+}
