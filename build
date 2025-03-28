@@ -38,11 +38,15 @@ local run = function(cmd, ...)
   print(cmd)
 end
 
+local split_extension = function(filename)
+  local i = filename:find([[%.[^%.]+$]]) or (#filename + 1)
+  return filename:sub(1, i - 1), filename:sub(i + 1)
+end
+
 --- @param filename string
 --- @return string, integer
 local nasm = function(filename)
-  local i = filename:find([[%.[^%.]+$]])
-  local base_name = i and filename:sub(1, i - 1) or filename
+  local base_name = split_extension(filename)
   local bin_name = (".build/bin/%s.bin"):format(base_name)
   run("nasm -f bin -l .build/lst/%s.lst -o %s %s", base_name, bin_name, filename)
 
@@ -77,7 +81,13 @@ local build = function(params)
   for i, file in ipairs(params.files) do
     local bin_file, size = nasm(file)
     size = math.ceil(size / SECTOR_SIZE)
-    files_info[i] = {file = bin_file, position = sector, size = size}
+    files_info[i] = {
+      bin_file = bin_file,
+      source_file = file,
+      position = sector,
+      size = size,
+    }
+
     sector = sector + size
 
     if sector > SECTORS_N then
@@ -90,20 +100,21 @@ local build = function(params)
   result:write(read_file(boot_file))
 
   for _, info in ipairs(files_info) do
-    if #info.file >= 28 then
-      fatal("file `%s` exceeds max name length of 27", info.file)
+    local base_name = split_extension(info.source_file)
+    if #base_name >= 28 then
+      fatal("file `%s` exceeds max name length of 27", base_name)
     end
 
     result:write(word(info.position))
     result:write(word(info.size))
-    result:write(info.file)
-    result:write(("\0"):rep(28 - #info.file))
+    result:write(base_name)
+    result:write(("\0"):rep(28 - #base_name))
   end
 
   result:write(("\0"):rep(SECTOR_SIZE - #files_info * 32))
 
   for _, info in ipairs(files_info) do
-    local content = read_file(info.file)
+    local content = read_file(info.bin_file)
     result:write(content)
     result:write(("\0"):rep(SECTOR_SIZE * info.size - #content))
   end
@@ -119,7 +130,7 @@ local build = function(params)
   run("qemu-system-x86_64 -drive file=.build/disk.img,format=raw,if=floppy")
 end
 
------------------------------------------------->8-------------------------------------------------
+----------------------------------------------- >8 ------------------------------------------------
 
 build {
   bootloader = "boot.asm",

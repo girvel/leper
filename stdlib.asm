@@ -89,19 +89,28 @@ readln:  ; di: string pointer, cx: length limit
 
 
 string_cmp:  ; di: first string, si: second string, cx: length
-    .loop:
-        mov al, [si]
-        cmp [di], al
-        jne .done
+    push si
+    push di
+    push cx
+.loop:
+    mov al, [si]
+    cmp [di], al
+    jne .done
 
-        cmp byte [di], 0
-        je .done
+    cmp byte [di], 0
+    je .done
 
-        inc di
-        inc si
+    inc di
+    inc si
 
-        loop .loop
+    loop .loop
 
-        cmp al, al
-    .done:
-        ret
+    cmp al, al
+.done:
+    pop cx
+    pop di
+    pop si
+    ret
+
+
+

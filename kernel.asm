@@ -92,15 +92,8 @@ section .text
     jmp .shell_loop
 
 .ls:
-    mov cx, 2
-    mov ah, 0x02
-    mov al, 1
-    mov ch, 0
-    mov dh, 0
-    mov dl, 0x00
-    mov bx, ls_buffer
-    int 0x13
-
+    mov di, ls_buffer
+    call read_file_table
     mov di, ls_buffer
 
 .ls_loop:
@@ -136,17 +129,22 @@ section .text
     jmp .shell_loop
 
 .demo:
-    mov cx, 6
-    mov ah, 0x02
-    mov al, 1
-    mov ch, 0
-    mov dh, 0
-    mov dl, 0x00
-    mov bx, 0x2000
-    int 0x13
+    mov di, ls_buffer
+    call read_file_table
 
+    mov di, ls_buffer
+    mov si, demo_literal
+    mov dx, 0x2000
+    call read_file
+
+    cmp dx, 0
+    je .not_found
     call 0x2000
-
+    jmp .shell_loop
+.not_found:
+    mov ah, 0x0E
+    mov al, '!'
+    int 0x10
     jmp .shell_loop
 
 .shell_end:
@@ -157,6 +155,7 @@ end:
     jmp end
 
 %INCLUDE "stdlib.asm"
+%INCLUDE "fs.asm"
 
 section .data
     version_string db "Leper OS v0.0.1", 0

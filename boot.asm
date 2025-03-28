@@ -13,7 +13,7 @@ jmp 0x1000
 
 disk_error:
     mov ah, 0x0E
-    mov al, '?'
+    mov al, '!'
     int 0x10
     hlt
 
