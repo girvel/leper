@@ -1,9 +1,13 @@
 [org 0x1000]
 
 section .text
+    ; Set up stack
     mov ax, 0x1000
     mov ss, ax
     mov sp, 0x0500
+
+    ; Set up syscalls
+    mov word [0x0400], writeln
 
     ; Clean the screen
     mov ah, 0x00  ; Set video mode
@@ -132,16 +136,16 @@ section .text
     jmp .shell_loop
 
 .demo:
-    mov cx, 8
+    mov cx, 6
     mov ah, 0x02
     mov al, 1
     mov ch, 0
     mov dh, 0
     mov dl, 0x00
-    mov bx, ls_buffer
+    mov bx, 0x2000
     int 0x13
 
-    call ls_buffer
+    call 0x2000
 
     jmp .shell_loop
 

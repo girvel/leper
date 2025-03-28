@@ -1,12 +1,8 @@
+[org 0x2000]
+
 section .text
     mov si, helloworld_literal
-    mov ah, 0x0E
-    mov al, '!'
-    int 0x10
-    mov al, 13
-    int 0x10
-    mov al, 10
-    int 0x10
+    call [0x0400]
     ret
 
 section .data
